@@ -1,0 +1,81 @@
+#
+name: 'Apply changes to client-infrastructure'
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      force-replace:
+        description: 'Resource address to force replace during Terraform apply. Example: aws_s3_bucket.example'
+        type: string
+        required: false
+        default: ''
+#  push:
+#    branches:
+#      - 'main'
+
+jobs:
+  terraform:
+    name: 'Terraform'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+
+      - name: Terraform Format
+        id: fmt
+        run: terraform fmt -check -recursive
+
+      - name: Terraform Init
+        id: init
+        run: terraform init
+
+      - name: Terraform Validate
+        id: validate
+        run: terraform validate -no-color
+
+      - name: Terraform Apply
+        if: github.ref == 'refs/heads/main' && inputs.force-replace == ''
+        run: |
+          echo "tfe_token = \"${{ secrets.TF_API_TOKEN }}\"" >> terraform.auto.tfvars
+          terraform apply -auto-approve -input=false
+
+      - name: Terraform Apply with force replace ${{ inputs.force-replace }}
+        if: github.ref == 'refs/heads/main' && inputs.force-replace != ''
+        run: |
+          echo "tfe_token = \"${{ secrets.TF_API_TOKEN }}\"" >> terraform.auto.tfvars
+          terraform apply -auto-approve -input=false -replace=${{ inputs.force-replace }}
+
+  notify-on-error:
+    needs:
+      - terraform
+    if: ${{ always() && (contains(needs.terraform.result, 'failure') || contains(needs.terraform.result, 'cancelled')) }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Failures Bot
+      notification-content: Failed to update the service **${{ github.repository }}**
+      embed-title: Go to the workflow
+      embed-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_FAILURES_WEBHOOK }}
+
+  notify-on-success:
+    needs:
+      - terraform
+    if: ${{ always() && needs.terraform.result == 'success' }}
+    uses: codingones/github-actions-workflows/.github/workflows/notify-discord.yml@main
+    with:
+      bot-username: Successes Bot
+      notification-content: The service **${{ github.repository }}** has been updated !
+      embed-title: Go to the workflow
+      embed-url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+    secrets:
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_SUCCESSES_WEBHOOK }}
