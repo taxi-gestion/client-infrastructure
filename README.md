@@ -3,7 +3,7 @@
 
 ## À propos
 
-client infrastructure décrit par le code un aspect de l'infrastructure à provisionner pour __PROJECT.
+client infrastructure décrit par le code un aspect de l'infrastructure à provisionner pour taxi-gestion.
 
 ## Table des matières
 
@@ -88,7 +88,7 @@ Pour que les modifications de la description de l'infrastructure soient appliqu�
 #### CI
 
 - [Github Actions](https://docs.github.com/en/actions) est l'outil d'intégration et de déploiement continu intégré à GitHub
-    - L'historique des déploiements est disponible [sous l'onglet Actions](https://github.com/__ORGANIZATION/__REPOSITORY/actions/)
+    - L'historique des déploiements est disponible [sous l'onglet Actions](https://github.com/taxi-gestion/client-infrastructure/actions/)
 - Secrets du dépôt :
     - `TF_API_TOKEN` : Le token d'api Terraform Cloud qui permet à la CI d'opérer des actions sur Terraform Cloud
       - Provisionné par le organization.deployer du compte AWS parent de l'organization
@@ -96,12 +96,12 @@ Pour que les modifications de la description de l'infrastructure soient appliqu�
 #### Déploiement
 
 - [AWS](https://aws.amazon.com/) est la plateforme de services Cloud proposée par Amazon.
-    - Utilisateur : `__PROJECT.client.infrastructure`
+    - Utilisateur : `taxi-gestion.client.infrastructure`
     - Groupe : `client.deployer`
 - [Terraform Cloud](https://app.terraform.io/) est la plateforme proposée par HashiCorp pour administrer les modifications d'infrastructure
-    - Organisation : [__ORGANIZATION](https://app.terraform.io/app/__ORGANIZATION/workspaces)
+    - Organisation : [taxi-gestion](https://app.terraform.io/app/taxi-gestion/workspaces)
     - Workspaces : `client`
-        - [client](https://app.terraform.io/app/__ORGANIZATION/workspaces/client)
+        - [client](https://app.terraform.io/app/taxi-gestion/workspaces/client)
     - Variables
         - `AWS_SECRET_ACCESS_KEY`
             - Value : Sensitive - write only

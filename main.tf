@@ -2,7 +2,7 @@
 terraform {
   backend "remote" {
     hostname     = "app.terraform.io"
-    organization = "__TERRAFORM_ORGANIZATION"
+    organization = "taxi-gestion"
 
     workspaces {
       name = "client"
